@@ -3,10 +3,11 @@ from tkinter import ttk
 import sqlite3
 
 class Inventory:
-
+	#Create database unless it already exists
 	db_name = 'goodybagsdatabas.db'
 	conn = sqlite3.connect('goodybagsdatabas.db')
 	c = conn.cursor()
+	#Add tables to the database if they don't already exist
 	c.execute("""CREATE TABLE IF NOT EXISTS varer(
 		nullrow text,
 		navn text,
@@ -20,7 +21,7 @@ class Inventory:
 	def __init__(self, wind):
 		self.wind = wind
 		self.wind.title ('Goodybags Varelager')
-
+		#GUI for adding a new item to the inventory management system
 		frame = LabelFrame (self.wind, text = 'Legg til ny vare')
 		frame.grid (row = 0, column = 1)
 
@@ -51,12 +52,12 @@ class Inventory:
 		Label (frame, text = 'kommentar: ').grid (row = 7, column = 1)
 		self.comment = Entry (frame)
 		self.comment.grid (row = 7, column = 2)
-
+		#Finally adding button to save the new item
 		ttk.Button(frame, text = 'Legg til vare', command = self.adding).grid (row = 8, column = 2)
-		
+		#All in-app GUI messages
 		self.message = Label (text = '', fg = 'red' )
 		self.message.grid (row = 8, column = 0)
-
+		#Initialize the Treeview
 		self.tree = ttk.Treeview (height = 15, columns = ('amount', 'size','price','status','best','comment'))
 		self.tree.grid (row = 9, column = 0, columnspan = 7)
 		self.tree.heading ('#0', text = 'Varenavn', anchor = W)
@@ -66,34 +67,35 @@ class Inventory:
 		self.tree.heading ('status', text = 'Status', anchor = W)
 		self.tree.heading ('best', text = 'Best før', anchor = W)
 		self.tree.heading ('comment', text = 'Kommentar', anchor = W)
-
+		#Add all buttons to the GUI, commands are functions below
 		ttk.Button (text = 'Slett rad', command = self.deleting).grid (row = 10, column = 0)
 		ttk.Button (text = 'Rediger rad', command = self.editing).grid (row = 10, column = 1)
 		ttk.Button (text = 'Søk', command = self.searching).grid (row = 10, column = 2)
 		ttk.Button (text = 'Oppdater', command = self.viewing_records).grid (row = 10, column = 3)
 
 		self.viewing_records()
-
+	#Funtion sorting the tree by descending expiration date, now obsolete - done by viewing_records below
 	def sortby(tree, col, descending):
 		data = [(tree.set(child, col), child) for child in tree.get_children('')]
 		data.sort(reverse=descending)
 		for i, item in enumerate(data):
 			tree.move(item[1], '', i)
 		tree.heading(col, command=lambda col=col: sortby(tree, col, int(not descending)))
+	#Function building queries to send to the sqlite3 database
 	def run_query (self, query, parameters = []):
 		with sqlite3.connect (self.db_name) as conn:
 			cursor = conn.cursor()
 			query_result = cursor.execute (query, parameters)
 			conn.commit()
 		return query_result
-
+	#Function building queries for the search-implementation as no parameters are used in that instance
 	def run_search_query(self,query):
 		with sqlite3.connect (self.db_name) as conn:
 			cursor = conn.cursor()
 			query_result = cursor.execute (query)
 			conn.commit()
 		return query_result
-
+	#Function to update the GUI with the user-made changes, displaying the treeviews children, all data in the db
 	def viewing_records (self):
 		records = self.tree.get_children()
 		for element in records:
@@ -105,9 +107,10 @@ class Inventory:
 
 		self.message['text'] = 'Listen har blitt oppdatert.'
 
-
+	#Function making sure that the userinput for name, amount, size, price, status and best are non-empty, thus making them required
 	def validation (self):
 		return len (self.name.get()) != 0 and len(self.amount.get()) != 0 and len(self.size.get())!= 0 and len(self.price.get())!= 0 and len(self.status.get()) != 0 and len(self.best.get())!= 0
+	#Functionality for the Legg til ny vare - button
 	def adding (self):
 		if self.validation():
 			query = 'INSERT INTO varer VALUES (NULL,?,?,?,?,?,?,?)'
@@ -124,7 +127,7 @@ class Inventory:
 		else:
 			self.message['text'] = 'Et eller flere felt er ikke fylt ut.'
 		self.viewing_records()
-
+	#Funtionality for the Slett vare - button
 	def deleting (self):
 		self.message ['text'] = ''
 		try:
@@ -141,7 +144,7 @@ class Inventory:
 		self.run_query (query, (name, best))
 		self.message['text'] = 'Vare {} slettet'.format(name)
 		self.viewing_records ()
-
+	#Funtionality for the Rediger Vare - button
 	def editing (self):
 		self.message['text'] = ''
 		try:
@@ -209,7 +212,7 @@ class Inventory:
 				new_best.get(),old_best,new_comment.get(),old_comment)).grid (row = 15, column = 2, sticky = W)
 
 		self.edit_wind.mainloop()
-
+	#More functionality for editing an item 
 	def edit_records (self, new_name, name, new_amount, amount,new_size,size,new_price,price,new_status,status, new_best, best, new_comment, comment):
 		query = 'UPDATE varer SET navn = ?, antall = ?, størrelse = ?, pris = ?, status = ?, utløpsdato = ?, kommentar = ? WHERE navn = ? AND antall = ? AND størrelse = ? AND pris = ? AND status = ? AND utløpsdato = ? AND kommentar = ?'
 		if new_name == '':
@@ -233,9 +236,9 @@ class Inventory:
 		self.edit_wind.destroy()
 		self.message['text'] = '{} har blitt endret.'.format(name)
 		self.viewing_records()
-
+	#search functionality
 	def searching(self):
-		
+		#open search window
 		self.edit_wind = Toplevel()
 		self.edit_wind.title = ('Søk')
 		Label (self.edit_wind, text = 'Her kan du søke etter varer:').grid (row = 1, column = 1)
@@ -243,15 +246,15 @@ class Inventory:
 
 		search_name = Entry(self.edit_wind)
 		search_name.grid( row = 1, column = 2)
-		
+		#add buttons to the window
 		Button (self.edit_wind, text = 'Utfør søk', command = lambda: self.search_records(search_name.get())).grid (row = 6, column = 2, sticky = W)
 		Button (self.edit_wind, text = 'Lukk', command = lambda: self.destroy_and_view()).grid (row = 6, column = 3, sticky = W)
 		
-
+	#Lukk - button functionality
 	def destroy_and_view(self):
 		self.edit_wind.destroy()
 		self.viewing_records()
-
+	#Utfør søk - button funtionality
 	def search_records(self, name):
 		rows = 0
 		records = self.tree.get_children()

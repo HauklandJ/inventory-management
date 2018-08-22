@@ -1,6 +1,6 @@
 # Inventory Management System
 
-I made this simple and user-friendly IMS for my at the time workplace to be used for tracking the items they received at their warehouse. 
+I made this simple and user-friendly IMS for my at the time workplace to be used for tracking the items they received at their warehouse. I was given the approval to upload the code as it reveals nothing.
 
 ## Getting Started
 

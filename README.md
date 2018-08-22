@@ -39,4 +39,4 @@ Change the current working directory to the location where you want the cloned d
 
 ## Acknowledgments
 
-
+* A big thanks to everyone at [stackoverflow](stackoverflow.com) and [r/learnpython](old.reddit.com/r/learnpython) who answered my questions

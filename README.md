@@ -1,2 +1,2 @@
-#Inventory Management System
+#InventoryManagementSystem
 Alpha 1.0
